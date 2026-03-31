@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elite Restaurant Pro</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#111;color:white;}
+nav{background:black;padding:15px;text-align:center;position:fixed;width:100%;top:0;z-index:1000;}
+nav h1{margin:0;}
+section{padding:100px 20px;}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+.card{background:#222;padding:15px;border-radius:10px;text-align:center;}
+button{background:orange;border:none;padding:8px 15px;margin-top:10px;cursor:pointer;border-radius:5px;}
+.cart{position:fixed;right:0;top:0;width:300px;height:100%;background:#000;padding:15px;overflow-y:auto;}
+.cart h2{text-align:center;}
+input,select{padding:5px;margin-top:5px;width:100%;}
+.admin{background:#222;padding:15px;margin-top:20px;border-radius:10px;}
+</style>
+</head>
+
+<body>
+
+<nav><h1>Elite Restaurant Pro 🍽️</h1></nav>
+
+<section>
+<h2>Menu</h2>
+<div class="menu">
+  <div class="card">
+    <h3>Pizza 🍕</h3>
+    <p>50dh</p>
+    <button onclick="addToCart('Pizza',50)">Ajouter</button>
+  </div>
+  <div class="card">
+    <h3>Burger 🍔</h3>
+    <p>40dh</p>
+    <button onclick="addToCart('Burger',40)">Ajouter</button>
+  </div>
+  <div class="card">
+    <h3>Pasta 🍝</h3>
+    <p>30dh</p>
+    <button onclick="addToCart('Pasta',30)">Ajouter</button>
+  </div>
+</div>
+</section>
+
+<div class="cart">
+<h2>Panier</h2>
+<ul id="cartItems"></ul>
+<p>Total: <span id="total">0</span> dh</p>
+<button onclick="order()">Commander via WhatsApp</button>
+
+<div class="admin">
+<h3>Admin Panel</h3>
+<p>Commandes sauvegardées:</p>
+<ul id="savedOrders"></ul>
+</div>
+</div>
+
+<script>
+let total = 0;
+let items = [];
+
+function addToCart(name, price){
+  items.push({name, price});
+  total += price;
+
+  document.getElementById("cartItems").innerHTML = "";
+  items.forEach(i=>document.getElementById("cartItems").innerHTML+="<li>"+i.name+" - "+i.price+"dh</li>");
+  document.getElementById("total").innerText = total;
+}
+
+function order(){
+  if(items.length===0){alert("Votre panier est vide"); return;}
+  let message = "Commande:%0A";
+  items.forEach(i=>message+=i.name+" - "+i.price+"dh%0A");
+  message+="Total: "+total+"dh";
+
+  // Save order in localStorage (Admin Panel)
+  let saved = JSON.parse(localStorage.getItem("orders") || "[]");
+  saved.push({items:items,total:total});
+  localStorage.setItem("orders", JSON.stringify(saved));
+  showSavedOrders();
+
+  // Open WhatsApp
+  window.open("https://wa.me/212600000000?text="+message);
+  
+  // Reset cart
+  items=[];
+  total=0;
+  document.getElementById("cartItems").innerHTML="";
+  document.getElementById("total").innerText=0;
+}
+
+function showSavedOrders(){
+  let saved = JSON.parse(localStorage.getItem("orders") || "[]");
+  document.getElementById("savedOrders").innerHTML = "";
+  saved.forEach((order,i)=>{
+    let li = document.createElement("li");
+    li.innerText = "Commande "+(i+1)+": "+order.items.map(x=>x.name).join(", ")+" | Total: "+order.total+"dh";
+    document.getElementById("savedOrders").appendChild(li);
+  });
+}
+
+// Load saved orders on page load
+showSavedOrders();
+</script>
+
+</body>
+</html>
